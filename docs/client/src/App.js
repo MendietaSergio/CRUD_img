@@ -1,12 +1,24 @@
-import React,{Fragment, useState} from 'react';
+import React,{Fragment, useState, useEffect} from 'react';
 
 
 function App() {
 
-  const [file, setfile] = useState(null)
+  const [file, setfile] = useState(null)//para guardar una imagen y limpiar el imput
+  const [imageList, setImageList] = useState([])//para mostrar las imagenes desde el servidor
+  const [listUpdated, setListUpdated] = useState(false)//para saber cuando se actualiza
   const selectedHandler = e =>{
     setfile(e.target.files[0]);//agrego el archivo en el estado
   }
+  //para consultar la base de datos del servidor
+  useEffect(()=>{
+    fetch('http://localhost:9000/image/get')
+      .then(res => res.json())
+      .then(res => setImageList(res))
+      .catch(error => {
+        console.log(error)
+      })
+      setListUpdated(false)
+  },[listUpdated])
   const sendHandler = ()=>{
     if(!file){
       alert("You must upload file.")
@@ -20,7 +32,10 @@ function App() {
       body: formdata
     })
       .then(res => res.text())
-      .then(res => console.log(res))
+      .then(res => {
+        console.log(res)
+        setListUpdated(true)//para actualizar y mostrar la imagen recien cargada
+        })
       .catch(error => {
         console.log(error)
       })
@@ -47,6 +62,14 @@ function App() {
           </div>          
             
         </div>
+      </div>
+      <div className="container mt-3" style={{display:"flex", flexWrap:"wrap"}}>
+        {/* para mostrar cada imagen que tiene el array */}
+      {imageList.map(image =>(
+        <div key={image} className="card m-2">
+          <img src={"http://localhost:9000/" + image} alt="" className="card-img-top" style={{height:"200px", width:"200px"}}/>
+        </div>
+      ))}
       </div>
     </Fragment>
   );
