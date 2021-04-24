@@ -4,6 +4,7 @@ const mysql = require('mysql');
 const myconn = require('express-myconnection');
 const routes = require('./routes/routes');
 const cors = require('cors');
+const path = require('path');
 //PARA CONECTAR LA BASE DE DATOS
 app.use(myconn(mysql,{
     host:'localhost',
@@ -13,6 +14,8 @@ app.use(myconn(mysql,{
     database: 'images'
 }))
 
+
+app.use(express.static(path.join(__dirname, 'dbImages')))
 app.use(cors());//para realizar peticiones desde el cliente 
 app.use(routes)
 

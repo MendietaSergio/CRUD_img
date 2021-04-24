@@ -34,6 +34,22 @@ router.post('/image/post',fileUpload,(req,res)=>{
     })
     console.log(req.file);
 })
+router.get('/image/get',(req,res)=>{
+    req.getConnection((err, conn) => {
+        if(err) return res.status(500).send('server error')
+
+        conn.query('SELECT * FROM image', (err, rows) => {
+            if(err) return res.status(500).send('server error')
+            rows.map( img=>{
+                //recibe la ruta y el dato de cada imagen.
+                fs.writeFileSync(path.join(__dirname, '../dbImages/'+img.id +"_CRUD_img.png"),img.data)
+            })
+            const imageDir = fs.readdirSync(path.join(__dirname,'../dbImages/'));
+            res.json(imageDir)
+        })
+    })
+    console.log(req.file);
+})
 
 
 module.exports = router;
