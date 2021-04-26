@@ -51,5 +51,17 @@ router.get('/image/get',(req,res)=>{
     console.log(req.file);
 })
 
-
+router.delete('/image/delete/:id',(req,res)=>{
+    req.getConnection((err, conn) => {
+        if(err) return res.status(500).send('server error')
+        //
+        conn.query('DELETE FROM image WHERE id = ?',[req.params.id], (err, rows) => {
+            if(err) return res.status(500).send('server error')
+            //PARA ELIMINAR LA IMAGEN DESDE EL ID QUE SE SELECCIONÓ
+            fs.unlinkSync(path.join(__dirname,'../dbImages/'+req.params.id+'_CRUD_img.png'))
+            res.json('image deleted')
+        })
+    })
+    console.log(req.file);
+})
 module.exports = router;

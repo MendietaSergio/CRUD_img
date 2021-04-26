@@ -1,16 +1,22 @@
 import React,{Fragment, useState, useEffect} from 'react';
-
+import Modal from 'react-modal';
 
 function App() {
 
   const [file, setfile] = useState(null)//para guardar una imagen y limpiar el imput
   const [imageList, setImageList] = useState([])//para mostrar las imagenes desde el servidor
-  const [listUpdated, setListUpdated] = useState(false)//para saber cuando se actualiza
+  const [listUpdated, setListUpdated] = useState(false)//para saber cuando se actualizan las imagenes
+  const [modalListOpen, setModalListOpen] = useState(false)//para que el modal este cerrado se empieza en 'false'
+  const [currentImage, setCurrentImage] = useState(null)//Para setear img en modal
+
+
+
   const selectedHandler = e =>{
     setfile(e.target.files[0]);//agrego el archivo en el estado
   }
   //para consultar la base de datos del servidor
   useEffect(()=>{
+    Modal.setAppElement('body')//setear el elemento seteado
     fetch('http://localhost:9000/image/get')
       .then(res => res.json())
       .then(res => setImageList(res))
@@ -42,6 +48,23 @@ function App() {
     document.getElementById('fileInput').value=null;
       setfile(null)//para que se limpie
   }
+  const modalHandler = (isOpen,image)=>{
+    setModalListOpen(isOpen)//seteo el estado de modal
+    setCurrentImage(image)
+  }
+  const deleteHandler = ()=>{
+    let imageID = currentImage.split('_')//separo solo el numero.
+    console.log(imageID[0]);
+    imageID =parseInt(imageID[0])//paso de string a entero.
+    fetch('http://localhost:9000/image/delete/'+imageID,{
+      method:"DELETE"
+    })
+    .then(res => res.text())
+    .then(res => console.log(res));
+    setModalListOpen(false);//para que cierre el modal antes de actualizar la página
+    setListUpdated(true);//para actualizar la página con las imagenes que quedan.
+
+  }
   return (
     // para exportar multiples elementos html
     <Fragment>
@@ -68,9 +91,22 @@ function App() {
       {imageList.map(image =>(
         <div key={image} className="card m-2">
           <img src={"http://localhost:9000/" + image} alt="" className="card-img-top" style={{height:"200px", width:"200px"}}/>
+          <div className="card-body">
+            <button className="btn btn-dark"  onClick={()=> modalHandler(true, image)}>Click to view</button>
+          </div>
         </div>
       ))}
       </div>
+      {/* Modal es la ventana emergente, isOpen modalListOpen es lo que contiene la variable 'true' para que se vea la venta.
+      Para cerrar la ventana se usa onRequestClose, cuando hacen click por fuera de la ventana se cierra la ventana emergente */}
+      <Modal style={{content:{right:"20%", left:"20%", height:"auto", width:"auto"}}} isOpen={modalListOpen} onRequestClose={()=>modalHandler(false, null)}> 
+        <div className="card">
+          <img src={"http://localhost:9000/" + currentImage} alt=""/>
+          <div className="card-body">
+            <button className="btn btn-danger" onClick={()=> deleteHandler()}>Delete</button>
+          </div>
+        </div>
+      </Modal>
     </Fragment>
   );
 }
